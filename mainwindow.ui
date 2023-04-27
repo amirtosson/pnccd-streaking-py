@@ -6,73 +6,112 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1593</width>
+    <height>847</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>50</y>
-      <width>511</width>
-      <height>141</height>
+      <x>9</x>
+      <y>9</y>
+      <width>181</width>
+      <height>83</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="openFileBtn">
+    <layout class="QGridLayout" name="controlLeftGrid">
+     <property name="verticalSpacing">
+      <number>4</number>
+     </property>
+     <item row="1" column="0" colspan="2">
+      <widget class="QTextEdit" name="fileNameText">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <horstretch>5</horstretch>
+         <verstretch>1</verstretch>
         </sizepolicy>
        </property>
-       <property name="text">
-        <string>Open File</string>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>50</height>
+        </size>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="pushButton">
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="openFileBtn">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Open File</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="streamDataBtn">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Ignored">
          <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
+         <verstretch>10</verstretch>
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Close</string>
+        <string>Stream data</string>
        </property>
       </widget>
      </item>
     </layout>
    </widget>
-   <widget class="QTextEdit" name="fileNameText">
+   <widget class="QWidget" name="mainPlotWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>200</y>
-      <width>511</width>
-      <height>41</height>
+      <x>200</x>
+      <y>10</y>
+      <width>731</width>
+      <height>601</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QWidget" name="selectedAreaPlotWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>380</y>
-      <width>89</width>
-      <height>25</height>
+      <x>1020</x>
+      <y>20</y>
+      <width>431</width>
+      <height>281</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Mybutton</string>
+   </widget>
+   <widget class="QWidget" name="toolBarWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>620</y>
+      <width>741</width>
+      <height>51</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -81,7 +120,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1593</width>
      <height>22</height>
     </rect>
    </property>

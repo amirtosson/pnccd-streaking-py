@@ -9,7 +9,6 @@ Created on Wed Apr 26 08:48:20 2023
 
 from PyQt5 import QtWidgets
 import main_window as _main_win
-
 import sys
 
 def main():
