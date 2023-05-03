@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1593</width>
+    <width>1759</width>
     <height>847</height>
    </rect>
   </property>
@@ -87,10 +87,10 @@
    <widget class="QWidget" name="mainPlotWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>10</y>
-      <width>731</width>
-      <height>601</height>
+      <x>230</x>
+      <y>60</y>
+      <width>750</width>
+      <height>750</height>
      </rect>
     </property>
    </widget>
@@ -99,18 +99,103 @@
      <rect>
       <x>1020</x>
       <y>20</y>
-      <width>431</width>
-      <height>281</height>
+      <width>400</width>
+      <height>280</height>
      </rect>
     </property>
    </widget>
    <widget class="QWidget" name="toolBarWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>620</y>
+      <x>230</x>
+      <y>10</y>
       <width>741</width>
       <height>51</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="engGroupBox">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>230</y>
+      <width>211</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QPushButton" name="generateEngBtn">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>100</y>
+       <width>201</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Generate energy spectrum</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>171</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>13</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Number of areas</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="numberOfAreasSpinBox">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>50</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>17</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>10</number>
+     </property>
+     <property name="value">
+      <number>4</number>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="engWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>370</y>
+      <width>750</width>
+      <height>320</height>
      </rect>
     </property>
    </widget>
@@ -120,7 +205,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1593</width>
+     <width>1759</width>
      <height>22</height>
     </rect>
    </property>
