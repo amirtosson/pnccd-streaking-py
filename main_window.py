@@ -8,6 +8,8 @@ Created on Wed Apr 26 08:59:57 2023
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5 import uic
+
+from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -20,6 +22,9 @@ else:
 
 
 import data as data_obj
+
+
+
 
 
 class Canvas(FigureCanvas):
@@ -71,6 +76,10 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar_1d = NavigationToolbar(self.plot_1d, self.engWidget)
         layout2 = QtWidgets.QVBoxLayout()
         layout2.addWidget(toolbar_1d)
+
+        
+        
+        
         
         
     def upload_file(self):
@@ -109,7 +118,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chart_2d_selected_area.ax.axis(False)
         self.chart_2d_selected_area.fig.canvas.draw()
         self.engGroupBox.setEnabled(True)
-   
 
 
 
@@ -147,14 +155,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plot_1d.ax.axis(True)
         self.plot_1d.ax.set_xlabel("Energy [keV]")
         self.plot_1d.ax.set_ylabel("Counts")
-        #self.plot_1d.ax.ylabel("Counts")
         self.plot_1d.ax.legend()
         self.plot_1d.fig.canvas.draw()
       
         self.fittingGroupBox.setEnabled(True)
-        self.saveBtn.setEnabled(True)
-        #plt.savefig(filenames[data_id].replace(".h", "")+"_energy_spectrum_original.png", format='png', dpi=600)
-        #plt.show()
+
 
 
     def start_fit(self):
@@ -177,7 +182,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plot_1d.ax.legend()
         self.plot_1d.fig.canvas.update()
         self.plot_1d.fig.canvas.draw()
-        
+        self.save_energy()
+
     def horizontal_checked(self):
         self.area_direction = 0 
         if self.horCheckBox.isChecked():
@@ -193,8 +199,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def save_energy(self):
         np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.txt', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
         np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.csv', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
-        self.saveBtn.setEnabled(False)
-    
+
+      
     
     
     
