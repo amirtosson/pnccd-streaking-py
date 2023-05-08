@@ -6,10 +6,8 @@ Created on Wed Apr 26 08:59:57 2023
 @author: tosson
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5 import uic
-from matplotlib.figure import Figure
-from matplotlib.widgets import RectangleSelector, PolygonSelector, SpanSelector
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,19 +22,13 @@ else:
 import data as data_obj
 
 
-
-
-
 class Canvas(FigureCanvas):
     ax = any
     fig = any
     def __init__(self, parent):
         w = int(parent.frameGeometry().width()/80)
         h = int(parent.frameGeometry().height()/80)
-        print(w)
         self.fig, self.ax = plt.subplots(figsize= (w,h))
-        #plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
-        #plt.margins(0,0)
         super().__init__(self.fig)
         self.setParent(parent)
 
@@ -47,16 +39,25 @@ class MainWindow(QtWidgets.QMainWindow):
     file_full_path = ""
     y_start, y_end, x_start, x_end = 0,0,0,0
     
+    area_direction = 0
     chart_2d = any
     plot_1d = any
     chart_2d_selected_area = any
+    
+    energy_spectra = any
+    
+    
     def __init__(self):
         super().__init__()
         uic.loadUi("mainwindow.ui", self)
         self.openFileBtn.clicked.connect(self.upload_file)
         self.streamDataBtn.clicked.connect(self.stream_data_from_file)
         self.generateEngBtn.clicked.connect(self.generate_energy_spectrum)
+        self.fitBtn.clicked.connect(self.start_fit)
+        self.saveBtn.clicked.connect(self.save_energy)
 
+        self.horCheckBox.stateChanged.connect(self.horizontal_checked)
+        self.verCheckBox.stateChanged.connect(self.vertical_checked)
         self.chart_2d  = Canvas(self.mainPlotWidget)
         toolbar_2d = NavigationToolbar(self.chart_2d, self.toolBarWidget)
         layout = QtWidgets.QVBoxLayout()
@@ -70,10 +71,6 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar_1d = NavigationToolbar(self.plot_1d, self.engWidget)
         layout2 = QtWidgets.QVBoxLayout()
         layout2.addWidget(toolbar_1d)
-
-        
-        
-        
         
         
     def upload_file(self):
@@ -108,34 +105,44 @@ class MainWindow(QtWidgets.QMainWindow):
         x2, y2 = erelease.xdata, erelease.ydata
         self.y_start, self.y_end, self.x_start, self.x_end =  int(x1), int(x2) , int(y1), int(y2)  
         self.chart_2d_selected_area.ax.imshow(self.data_object.event[self.x_start:self.x_end, self.y_start:self.y_end], interpolation='none')
-        #self.chart_2d_selected_area.ax.set_xticks(np.arange(self.x_start, self.x_end))
 
         self.chart_2d_selected_area.ax.axis(False)
         self.chart_2d_selected_area.fig.canvas.draw()
         self.engGroupBox.setEnabled(True)
    
-        
-        #self.chart_2d_selected_area.fig.canvas.mpl_connect("axes_leave_event", self.test_profile_2)
-        #self.chart_2d_selected_area.fig.canvas.mpl_connect("axes_enter_event", self.test_profile)
 
 
 
     def generate_energy_spectrum(self):
         areas_number = self.numberOfAreasSpinBox.value()
-        all_selected_pixels =  self.data_object.raw[self.x_start:self.x_end, self.y_start:self.y_end]
-        energy_spectra = np.zeros((areas_number, 1024))
-        
-        step_size = int((self.x_end - self.x_start)/areas_number)
-        
+        self.energy_spectra = np.zeros((areas_number, 1024))
         energy_channel_kev = np.round(np.arange(start=1, stop=1025, step=1) * 0.04155, 3)
+
+        all_selected_pixels =  self.data_object.raw[self.x_start:self.x_end, self.y_start:self.y_end]
         self.plot_1d.ax.clear()
-        for n in range(areas_number):
-            a_s = step_size * n
-            a_e = a_s + step_size
-            for i in range(a_s, a_e):
-                for j in range(self.y_end-self.y_start-1):
-                    energy_spectra[n] = energy_spectra[n] + all_selected_pixels[i,j, :]
-            self.plot_1d.ax.plot(energy_channel_kev,energy_spectra[n], label ="Area "+str(n+1))
+        if self.area_direction == 0:        
+            step_size = int((self.x_end - self.x_start)/areas_number)
+            
+            for n in range(areas_number):
+                a_s = step_size * n
+                a_e = a_s + step_size
+                for i in range(a_s, a_e):
+                    for j in range(self.y_end-self.y_start-1):
+                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[i,j, :]
+                self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
+                
+                np.save("d"+str(n+1)+".np",self.energy_spectra[n] )
+                
+        else:   
+            step_size = int((self.y_end - self.y_start)/areas_number)
+            for n in range(areas_number):
+                a_s = step_size * n
+                a_e = a_s + step_size
+                for i in range(a_s, a_e):
+                    for j in range(self.x_end-self.x_start-1):
+                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[j,i, :]
+                self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
+        
         
         self.plot_1d.ax.axis(True)
         self.plot_1d.ax.set_xlabel("Energy [keV]")
@@ -143,71 +150,51 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.plot_1d.ax.ylabel("Counts")
         self.plot_1d.ax.legend()
         self.plot_1d.fig.canvas.draw()
-
+      
+        self.fittingGroupBox.setEnabled(True)
+        self.saveBtn.setEnabled(True)
         #plt.savefig(filenames[data_id].replace(".h", "")+"_energy_spectrum_original.png", format='png', dpi=600)
         #plt.show()
 
 
-    def line_profile(self, event):
+    def start_fit(self):
+        self.generate_energy_spectrum()
+        areas_number = self.numberOfAreasSpinBox.value()
+        start = int(self.minEngSpinBox.value()/0.04155)
+        end = int(self.maxEngSpinBox.value()/0.04155)
+        self.fitText.setPlainText("")
+        for n in range(areas_number):   
+            ok, p, y_fitted = self.data_object.fit_energy_spectrum(self.data_object.energy_channel_kev[start:end], self.energy_spectra[n,start:end])
+            if not ok:
+                self.fitText.setPlainText("No valid fitting, please chech the energy interval for fitting")
+                self.generate_energy_spectrum()
+                return
+            t = self.fitText.toPlainText()
+            self.fitText.setPlainText(t + "\nEnergy-Area"+str(n+1) + "="+str(np.round(p[2],2))+"keV" )
+            #print(p)
+            self.plot_1d.ax.plot(self.data_object.energy_channel_kev[start:end], y_fitted, '--', label ="Fitting-Area"+str(n+1))   
+        self.fitText.setEnabled(True)
+        self.plot_1d.ax.legend()
+        self.plot_1d.fig.canvas.update()
+        self.plot_1d.fig.canvas.draw()
+        
+    def horizontal_checked(self):
+        self.area_direction = 0 
+        if self.horCheckBox.isChecked():
+            
+            self.verCheckBox.setCheckState(False)
+        
+    def vertical_checked(self):
+        self.area_direction = 1 
+        if self.verCheckBox.isChecked():
 
-        print("==========NEW==========")
-        print("EY: ",event.y)
-        print("EYD: ",event.ydata)
-        print("YS: ",self.y_start)
-        print("YN: ",self.y_end)
-        print("====================")
-        print("EX: ", event.x)   
-        print("EXD: ", event.xdata)  
-        print("XS: ",self.x_start)
-        print("XE: ",self.x_end)
-        
-        
-    def test_profile(self, event):
-        plt.connect("button_press_event", self.line_profile)
-        print("Con")
-        
-    def test_profile_2(self, event):
-        plt.disconnect(self.line_profile)
-        print("Dis")
-        #self.chart_2d_selected_area.ax.plot(event.xy, c='r')
-        
-        
-        #self.init_ui()
-    # prparing plotting scene
+            self.horCheckBox.setCheckState(False)
     
-    """
+    def save_energy(self):
+        np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.txt', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
+        np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.csv', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
+        self.saveBtn.setEnabled(False)
     
-    static_ax = any
-    canvas_2d = any
-    static_ax_selected_area = any
-    canvas_2d_selected_area = any
-    data_object = data_obj.Data()
-    toggle_selector = any
-    file_full_path = ""
-    def __init__(self):
-        super().__init__()
-        self.init_ui()
-    
-    def init_ui(self):
-        #px = 1/plt.rcParams['figure.dpi'] 
-        #TODO: Set tooltips
-        uic.loadUi("mainwindow.ui", self)
-        self.openFileBtn.clicked.connect(self.upload_file)
-        self.streamDataBtn.clicked.connect(self.stream_data_from_file)
-        self.canvas_2d = FigureCanvas(Figure())
-        self.static_ax = self.canvas_2d.figure.subplots()
-        layout = QtWidgets.QVBoxLayout(self.mainPlotWidget)
-        layout.addWidget(self.canvas_2d)
-        self.canvas_2d_selected_area = FigureCanvas(Figure())
-        self.static_ax_selected_area = self.canvas_2d_selected_area.figure.subplots()
-        layout = QtWidgets.QVBoxLayout(self.selectedAreaPlotWidget)
-        layout.addWidget(self.canvas_2d_selected_area)
-        
-    
-    
-    
-    
-    """
     
     
     
