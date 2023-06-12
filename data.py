@@ -7,6 +7,7 @@ Created on Wed Apr 26 09:14:15 2023
 """
 import h5py
 import numpy as np
+from numpy import trapz
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
@@ -50,6 +51,7 @@ class Data():
         try:
             p = self.gaussian_fit(x, y)
             y_f = self.gauss(x, *p)
+            area = trapz(y_f, dx=1)
         except:
-            return False, [],[]
-        return True, p, y_f
+            return False, [],[], 0
+        return True, p, y_f, area

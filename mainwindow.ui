@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1759</width>
+    <width>1815</width>
     <height>847</height>
    </rect>
   </property>
@@ -87,7 +87,7 @@
    <widget class="QWidget" name="mainPlotWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>300</x>
       <y>60</y>
       <width>750</width>
       <height>750</height>
@@ -97,7 +97,7 @@
    <widget class="QWidget" name="selectedAreaPlotWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>1020</x>
+      <x>1081</x>
       <y>20</y>
       <width>400</width>
       <height>280</height>
@@ -107,7 +107,7 @@
    <widget class="QWidget" name="toolBarWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>300</x>
       <y>10</y>
       <width>741</width>
       <height>51</height>
@@ -122,106 +122,85 @@
      <rect>
       <x>10</x>
       <y>230</y>
-      <width>211</width>
-      <height>261</height>
+      <width>281</width>
+      <height>221</height>
      </rect>
     </property>
     <property name="title">
      <string/>
     </property>
-    <widget class="QPushButton" name="generateEngBtn">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>100</y>
-       <width>201</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Generate energy spectrum</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>10</y>
-       <width>171</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>13</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Number of areas</string>
-     </property>
-    </widget>
-    <widget class="QSpinBox" name="numberOfAreasSpinBox">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>50</y>
-       <width>81</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>17</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>10</number>
-     </property>
-     <property name="value">
-      <number>4</number>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="verCheckBox">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>150</y>
-       <width>92</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Horizontally</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="horCheckBox">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>190</y>
-       <width>92</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Vertically</string>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Number of areas</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="numberOfAreasSpinBox">
+       <property name="font">
+        <font>
+         <pointsize>17</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+       <property name="value">
+        <number>4</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="generateEngBtn">
+       <property name="text">
+        <string>Energy spectra (identical areas) </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="areasSizeBtn">
+       <property name="text">
+        <string>Define areas size </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="verCheckBox">
+       <property name="text">
+        <string>Horizontally</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="horCheckBox">
+       <property name="text">
+        <string>Vertically</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
    <widget class="QWidget" name="engWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>990</x>
+      <x>1051</x>
       <y>370</y>
       <width>750</width>
       <height>320</height>
@@ -234,7 +213,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>1019</x>
+      <x>1080</x>
       <y>689</y>
       <width>651</width>
       <height>111</height>
@@ -359,7 +338,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>1460</x>
+      <x>1521</x>
       <y>90</y>
       <width>241</width>
       <height>261</height>
@@ -384,7 +363,7 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>1470</x>
+      <x>1531</x>
       <y>40</y>
       <width>111</width>
       <height>41</height>
@@ -400,7 +379,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>1030</x>
+      <x>1091</x>
       <y>330</y>
       <width>191</width>
       <height>25</height>
@@ -410,13 +389,24 @@
      <string>Save as text and csv</string>
     </property>
    </widget>
+   <widget class="QWidget" name="gridLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>500</y>
+      <width>241</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="areasGridLayout"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1759</width>
+     <width>1815</width>
      <height>22</height>
     </rect>
    </property>

@@ -6,7 +6,9 @@ Created on Wed Apr 26 08:59:57 2023
 @author: tosson
 """
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QSpinBox, QLabel, QPushButton
+
 from PyQt5 import uic
 
 from matplotlib.widgets import RectangleSelector
@@ -60,6 +62,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.generateEngBtn.clicked.connect(self.generate_energy_spectrum)
         self.fitBtn.clicked.connect(self.start_fit)
         self.saveBtn.clicked.connect(self.save_energy)
+        self.areasSizeBtn.clicked.connect(self.customize_areas_size)
+
 
         self.horCheckBox.stateChanged.connect(self.horizontal_checked)
         self.verCheckBox.stateChanged.connect(self.vertical_checked)
@@ -74,6 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chart_2d.fig.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
         self.chart_2d_selected_area.fig.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
         toolbar_1d = NavigationToolbar(self.plot_1d, self.engWidget)
+    
         layout2 = QtWidgets.QVBoxLayout()
         layout2.addWidget(toolbar_1d)
 
@@ -157,11 +162,110 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plot_1d.ax.set_ylabel("Counts")
         self.plot_1d.ax.legend()
         self.plot_1d.fig.canvas.draw()
-      
+        self.saveBtn.setEnabled(True)
         self.fittingGroupBox.setEnabled(True)
 
+    def customize_areas_size(self):
+        areas_number = self.numberOfAreasSpinBox.value()
+        
+        max_y= int((self.x_end - self.x_start))
+        max_x = int((self.y_end - self.y_start))
+        remain_pixels = 0
+        if self.area_direction == 1:  
+            remain_pixels = int((self.x_end - self.x_start))
+        else:
+            remain_pixels = int((self.y_end - self.y_start))
+        
+        self.areasGridLayout.addWidget(QLabel("Remain pixels"), 1, 1, 1, 2)
+        pixel_counter = QLabel(str(remain_pixels-areas_number))
+        pixel_counter.setObjectName("pixCounter")
+        self.areasGridLayout.addWidget(pixel_counter, 1, 3, 1, 2)
+        
+        for i in range(areas_number):
+            x = QSpinBox(minimum=1, maximum=max_x, value=1)
+            y = QSpinBox(minimum=1, maximum=max_y, value=1)
+            x.valueChanged.connect(self.area_changed)
+            y.valueChanged.connect(self.area_changed)
+            x.setObjectName("area_"+ str(i+1)+"SBX")
+            y.setObjectName("area_"+ str(i+1)+"SBY")
+            self.areasGridLayout.addWidget(QLabel("Area_"+ str(i+1)+": X"), i+2, 1)
+            self.areasGridLayout.addWidget(x, i+2, 2)
+            self.areasGridLayout.addWidget(QLabel("Y"), i+2, 3)
+            self.areasGridLayout.addWidget(y, i+2, 4)
+            
+        startBtn = QPushButton("Generate Spectra")
+        startBtn.clicked.connect(self.generate_spectra_with_user_defined_areas_size)
+        self.areasGridLayout.addWidget(startBtn, areas_number+2,2, 1, 4)
+        
+    def generate_spectra_with_user_defined_areas_size(self):
+        areas_number = self.numberOfAreasSpinBox.value()
+        x_steps = []
+        y_steps = []
+        for i in range(areas_number):
+            xsb = self.findChild(QtWidgets.QSpinBox, "area_"+ str(i+1)+"SBX")
+            ysb = self.findChild(QtWidgets.QSpinBox, "area_"+ str(i+1)+"SBY")
+            x_steps.append(xsb.value())
+            y_steps.append(ysb.value())
+        areas_number = self.numberOfAreasSpinBox.value()
+        self.energy_spectra = np.zeros((areas_number, 1024))
+        energy_channel_kev = np.round(np.arange(start=1, stop=1025, step=1) * 0.04155, 3)
+    
+        all_selected_pixels =  self.data_object.raw[self.x_start:self.x_end, self.y_start:self.y_end]
+        self.plot_1d.ax.clear()
+        if self.area_direction == 0:        
+            p = 1
+            for n in range(areas_number):
+                a_s = p-1
+                a_e = p + x_steps[n]-1
+                for i in range(a_s, a_e):
+                    
+                    for j in range(self.x_end-self.x_start-1):
+                        print(all_selected_pixels.shape)
+                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[j,i, :]
+                p = a_e
+                self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
+                
+                np.save("d"+str(n+1)+".np",self.energy_spectra[n] )
+                
+        else:   
+            p = 1
+            for n in range(areas_number):
+                a_s = p -1 
+                a_e = p + y_steps[n]-1
+                for i in range(a_s, a_e):
+                    for j in range(self.y_end-self.y_start-1):
+                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[j,i, :]
+                p = a_e
+                self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
+                np.save("d"+str(n+1)+".np",self.energy_spectra[n] )
+        
+        self.plot_1d.ax.axis(True)
+        self.plot_1d.ax.set_xlabel("Energy [keV]")
+        self.plot_1d.ax.set_ylabel("Counts")
+        self.plot_1d.ax.legend()
+        self.plot_1d.fig.canvas.draw()
+        self.saveBtn.setEnabled(True)
+        self.fittingGroupBox.setEnabled(True)
 
+    def area_changed(self):
+        areas_number = self.numberOfAreasSpinBox.value()     
+        remain_pixels = 0
+        if self.area_direction == 0:  
+            remain_pixels = int((self.y_end - self.y_start))
+            for i in range(areas_number):
+                xsb = self.findChild(QtWidgets.QSpinBox, "area_"+ str(i+1)+"SBX")
+                remain_pixels = remain_pixels - xsb.value()
 
+        else:
+            remain_pixels = int((self.x_end - self.x_start))
+            for i in range(areas_number):
+                ysb = self.findChild(QtWidgets.QSpinBox, "area_"+ str(i+1)+"SBY")
+                remain_pixels = remain_pixels - ysb.value()
+
+        self.findChild(QtWidgets.QLabel,"pixCounter").setText(str(remain_pixels)) 
+
+        
+    
     def start_fit(self):
         self.generate_energy_spectrum()
         areas_number = self.numberOfAreasSpinBox.value()
@@ -169,20 +273,18 @@ class MainWindow(QtWidgets.QMainWindow):
         end = int(self.maxEngSpinBox.value()/0.04155)
         self.fitText.setPlainText("")
         for n in range(areas_number):   
-            ok, p, y_fitted = self.data_object.fit_energy_spectrum(self.data_object.energy_channel_kev[start:end], self.energy_spectra[n,start:end])
+            ok, p, y_fitted, area_under_curve = self.data_object.fit_energy_spectrum(self.data_object.energy_channel_kev[start:end], self.energy_spectra[n,start:end])
             if not ok:
                 self.fitText.setPlainText("No valid fitting, please chech the energy interval for fitting")
                 self.generate_energy_spectrum()
                 return
             t = self.fitText.toPlainText()
-            self.fitText.setPlainText(t + "\nEnergy-Area"+str(n+1) + "="+str(np.round(p[2],2))+"keV" )
-            #print(p)
+            self.fitText.setPlainText(t + "\nEnergy-Area"+str(n+1) + "="+str(np.round(p[2],2))+"keV; FWHM= " + str(np.round(2.35482 * p[3],3)) + "; AUC = "+  str(np.round(area_under_curve,3)))
             self.plot_1d.ax.plot(self.data_object.energy_channel_kev[start:end], y_fitted, '--', label ="Fitting-Area"+str(n+1))   
         self.fitText.setEnabled(True)
         self.plot_1d.ax.legend()
         self.plot_1d.fig.canvas.update()
         self.plot_1d.fig.canvas.draw()
-        self.save_energy()
 
     def horizontal_checked(self):
         self.area_direction = 0 
@@ -199,6 +301,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def save_energy(self):
         np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.txt', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
         np.savetxt(self.file_full_path.replace(".h", "")+"_POS_X_"+str(self.x_start)+"_TO_" +str(self.x_end)+"_Y_"  +str(self.y_start)+"_TO_" + str(self.y_end) +  '.csv', np.c_[self.data_object.energy_channel_kev, np.transpose(self.energy_spectra)])
+        self.saveBtn.setEnabled(False)
 
       
     
