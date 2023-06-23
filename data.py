@@ -55,3 +55,10 @@ class Data():
         except:
             return False, [],[], 0
         return True, p, y_f, area
+    
+    def filtered_data_channel_numer(self, min, max):
+        f_data = np.zeros((264,264))
+        for i in range(264):
+            for k in range(264):
+                f_data[i,k]= (self.raw[i,k, min:max] > 0).sum()
+        return f_data

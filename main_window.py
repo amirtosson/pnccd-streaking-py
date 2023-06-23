@@ -7,7 +7,7 @@ Created on Wed Apr 26 08:59:57 2023
 """
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QSpinBox, QLabel, QPushButton
+from PyQt5.QtWidgets import QSpinBox, QLabel, QPushButton, QErrorMessage, QMessageBox
 
 from PyQt5 import uic
 
@@ -50,7 +50,6 @@ class MainWindow(QtWidgets.QMainWindow):
     chart_2d = any
     plot_1d = any
     chart_2d_selected_area = any
-    
     energy_spectra = any
     
     
@@ -63,6 +62,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fitBtn.clicked.connect(self.start_fit)
         self.saveBtn.clicked.connect(self.save_energy)
         self.areasSizeBtn.clicked.connect(self.customize_areas_size)
+        self.replotBtn.clicked.connect(self.plot_filtered)
+
 
 
         self.horCheckBox.stateChanged.connect(self.horizontal_checked)
@@ -105,6 +106,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def plot(self):
         self.chart_2d.ax.clear()
         self.chart_2d.ax.imshow(self.data_object.event, interpolation='none')
+        self.chart_2d.ax.axis(False)
+        self.chart_2d.fig.canvas.draw()
+        self.hitsFilterGroupBox.setEnabled(True)
+        self.toggle_selector = RectangleSelector(self.chart_2d.ax, self.line_select_callback, useblit=True,
+                                       button=[1, 3],  # don't use middle button
+                                       minspanx=5, minspany=5,
+                                       spancoords='pixels',
+                                       interactive=True)
+    
+        
+        
+    def plot_filtered(self):
+        self.chart_2d.ax.clear()
+        min_ch = self.minCHVSpinBox.value()
+        max_ch = self.maxCHVSpinBox.value()
+        if min_ch > max_ch: 
+            choice = QMessageBox.critical(None,
+                                  "Error","Minimum Chunnel number should be less that max channel number!", QMessageBox.Cancel)
+            return
+        self.chart_2d.ax.imshow(self.data_object.filtered_data_channel_numer(min_ch, max_ch), interpolation='none')
         self.chart_2d.ax.axis(False)
         self.chart_2d.fig.canvas.draw()
         self.toggle_selector = RectangleSelector(self.chart_2d.ax, self.line_select_callback, useblit=True,
@@ -171,6 +192,10 @@ class MainWindow(QtWidgets.QMainWindow):
         max_y= int((self.x_end - self.x_start))
         max_x = int((self.y_end - self.y_start))
         remain_pixels = 0
+
+        for i in reversed(range(self.areasGridLayout.count())): 
+            self.areasGridLayout.itemAt(i).widget().setParent(None)
+            
         if self.area_direction == 1:  
             remain_pixels = int((self.x_end - self.x_start))
         else:
@@ -198,6 +223,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.areasGridLayout.addWidget(startBtn, areas_number+2,2, 1, 4)
         
     def generate_spectra_with_user_defined_areas_size(self):
+        
+        couPix = self.findChild(QtWidgets.QLabel, "pixCounter")
+        if int(couPix.text()) < 0: 
+            choice = QMessageBox.critical(None,
+                                  "Error","Pixels number is more than available!", QMessageBox.Cancel)
+            return
         areas_number = self.numberOfAreasSpinBox.value()
         x_steps = []
         y_steps = []
@@ -206,6 +237,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ysb = self.findChild(QtWidgets.QSpinBox, "area_"+ str(i+1)+"SBY")
             x_steps.append(xsb.value())
             y_steps.append(ysb.value())
+
         areas_number = self.numberOfAreasSpinBox.value()
         self.energy_spectra = np.zeros((areas_number, 1024))
         energy_channel_kev = np.round(np.arange(start=1, stop=1025, step=1) * 0.04155, 3)
@@ -220,7 +252,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 for i in range(a_s, a_e):
                     
                     for j in range(self.x_end-self.x_start-1):
-                        print(all_selected_pixels.shape)
                         self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[j,i, :]
                 p = a_e
                 self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
@@ -234,9 +265,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 a_e = p + y_steps[n]-1
                 for i in range(a_s, a_e):
                     for j in range(self.y_end-self.y_start-1):
-                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[j,i, :]
+                        self.energy_spectra[n] = self.energy_spectra[n] + all_selected_pixels[i,j, :]
                 p = a_e
                 self.plot_1d.ax.plot(energy_channel_kev,self.energy_spectra[n], label ="Area "+str(n+1))
+                
                 np.save("d"+str(n+1)+".np",self.energy_spectra[n] )
         
         self.plot_1d.ax.axis(True)
@@ -248,8 +280,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fittingGroupBox.setEnabled(True)
 
     def area_changed(self):
+        
         areas_number = self.numberOfAreasSpinBox.value()     
         remain_pixels = 0
+        self.findChild(QtWidgets.QLabel,"pixCounter").setText(str(remain_pixels)) 
         if self.area_direction == 0:  
             remain_pixels = int((self.y_end - self.y_start))
             for i in range(areas_number):
